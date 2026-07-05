@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+<title>Mistérios em Série</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:#EEF2FF;
+  font-family:'Segoe UI',system-ui,Arial,sans-serif;
+  color:#1e293b;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden;
+}
+
+/* ── HEADER ── */
+#header{
+  width:100%;max-width:440px;
+  background:linear-gradient(135deg,#4f46e5,#7c3aed);
+  padding:12px 16px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 4px 20px rgba(79,70,229,.35);
+  position:sticky;top:0;z-index:50;
+}
+#hTitle{
+  color:#fff;font-size:17px;font-weight:900;
+  letter-spacing:.5px;line-height:1;
+}
+#hSub{color:rgba(255,255,255,.7);font-size:10px;margin-top:2px;}
+.hbadge{
+  text-align:center;background:rgba(255,255,255,.15);
+  border-radius:10px;padding:5px 10px;color:#fff;
+}
+.hbnum{font-size:18px;font-weight:900;line-height:1;}
+.hblbl{font-size:9px;opacity:.8;text-transform:uppercase;letter-spacing:.5px;}
+
+/* ── TIMER BAR ── */
+#timerWrap{
+  width:100%;max-width:440px;height:6px;
+  background:#e2e8f0;display:none;
+}
+#timerFill{
+  height:100%;background:linear-gradient(90deg,#22c55e,#f59e0b,#ef4444);
+  transition:width .5s linear;
+}
+
+/* ── MAIN ── */
+#main{
+  width:100%;max-width:440px;
+  padding:12px 12px 24px;
+  display:flex;flex-direction:column;gap:12px;
+}
+
+/* ── MYSTERY CARD ── */
+#mysteryCard{
+  background:#fff;border-radius:16px;
+  padding:16px;
+  box-shadow:0 2px 12px rgba(0,0,0,.08);
+  border-left:5px solid #4f46e5;
+}
+#mystTheme{
+  font-size:11px;font-weight:700;color:#4f46e5;
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;
+}
+#mystEmoji{font-size:36px;margin-bottom:6px;display:block;}
+#mystTitle{font-size:18px;font-weight:900;color:#1e293b;margin-bottom:4px;}
+#mystDesc{font-size:13px;color:#64748b;line-height:1.5;}
+
+/* ── STATUS ROW ── */
+#statusRow{
+  display:flex;gap:8px;
+}
+.statCard{
+  flex:1;background:#fff;border-radius:12px;
+  padding:10px;text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.statCard .snum{font-size:22px;font-weight:900;}
+.statCard .slbl{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;}
+#attCard .snum{color:#ef4444;}
+#scoreCard .snum{color:#4f46e5;}
+#cycCard .snum{color:#7c3aed;}
+
+/* ── CLUES PANEL ── */
+#cluesPanel{
+  background:#fff;border-radius:16px;
+  padding:14px;
+  box-shadow:0 2px 12px rgba(0,0,0,.08);
+}
+#cluesTitle{
+  font-size:12px;font-weight:700;color:#64748b;
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;
+  display:flex;align-items:center;gap:6px;
+}
+#cluesList{
+  display:flex;flex-direction:column;gap:6px;
+  min-height:40px;
+}
+.clueItem{
+  display:flex;align-items:center;gap:8px;
+  background:#f8fafc;border-radius:8px;padding:8px 12px;
+  font-size:13px;color:#334155;
+  border:1px solid #e2e8f0;
+  animation:slideIn .3s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.clueIcon{font-size:16px;flex-shrink:0;}
+.clueText{line-height:1.3;}
+.clueText b{color:#ef4444;}
+.noClue{color:#94a3b8;font-size:13px;text-align:center;padding:8px 0;font-style:italic;}
+
+/* ── GUESS SECTION ── */
+#guessSection{
+  background:#fff;border-radius:16px;
+  padding:14px;
+  box-shadow:0 2px 12px rgba(0,0,0,.08);
+}
+#guessTitle{
+  font-size:12px;font-weight:700;color:#64748b;
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;
+}
+.guessGroup{margin-bottom:14px;}
+.groupLabel{
+  font-size:11px;font-weight:700;color:#4f46e5;
+  text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:6px;display:flex;align-items:center;gap:5px;
+}
+.choiceGrid{
+  display:flex;flex-wrap:wrap;gap:6px;
+}
+.choiceBtn{
+  flex:0 0 auto;padding:7px 13px;border-radius:20px;
+  border:2px solid #e2e8f0;background:#f8fafc;
+  font-size:13px;font-weight:600;color:#334155;
+  cursor:pointer;transition:all .15s;
+  line-height:1;
+}
+.choiceBtn:active{transform:scale(.95);}
+.choiceBtn.selected{
+  border-color:#4f46e5;background:#ede9fe;color:#4f46e5;
+}
+.choiceBtn.eliminated{
+  border-color:#fca5a5;background:#fef2f2;color:#fca5a5;
+  text-decoration:line-through;cursor:default;
+  pointer-events:none;
+}
+
+/* ── SUBMIT BUTTON ── */
+#btnSubmit{
+  width:100%;padding:15px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,#4f46e5,#7c3aed);
+  color:#fff;font-size:17px;font-weight:900;
+  cursor:pointer;letter-spacing:.5px;
+  box-shadow:0 4px 15px rgba(79,70,229,.4);
+  transition:transform .1s,opacity .1s;
+}
+#btnSubmit:active{transform:scale(.97);}
+#btnSubmit:disabled{opacity:.4;cursor:default;}
+
+/* ── FEEDBACK TOAST ── */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:#1e293b;color:#fff;padding:12px 22px;border-radius:30px;
+  font-size:14px;font-weight:700;
+  box-shadow:0 8px 25px rgba(0,0,0,.3);
+  z-index:200;opacity:0;transition:opacity .25s;
+  max-width:320px;text-align:center;pointer-events:none;
+}
+#toast.show{opacity:1;}
+
+/* ── OVERLAY ── */
+#overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(238,242,255,.95);z-index:300;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:0;padding:20px;
+}
+#overlay.show{display:flex;}
+#oBox{
+  background:#fff;border-radius:24px;
+  padding:36px 28px;text-align:center;max-width:320px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.15);
+}
+#oEmoji{font-size:72px;display:block;margin-bottom:12px;}
+#oTitle{font-size:32px;font-weight:900;margin-bottom:8px;}
+#oMsg{font-size:14px;color:#64748b;line-height:1.6;margin-bottom:20px;}
+#oBadges{display:flex;gap:10px;justify-content:center;margin-bottom:22px;}
+.oBadge{
+  background:#ede9fe;border-radius:12px;padding:10px 16px;
+  font-size:13px;font-weight:700;color:#4f46e5;text-align:center;
+}
+.oBadge span{display:block;font-size:20px;font-weight:900;}
+#oReveal{
+  background:#f8fafc;border-radius:12px;padding:12px;
+  margin-bottom:20px;font-size:13px;color:#334155;
+  border:1px solid #e2e8f0;line-height:1.6;text-align:left;
+}
+#oReveal b{color:#4f46e5;}
+.bigBtn{
+  width:100%;padding:15px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,#4f46e5,#7c3aed);
+  color:#fff;font-size:18px;font-weight:900;cursor:pointer;
+  box-shadow:0 4px 15px rgba(79,70,229,.4);letter-spacing:.5px;
+}
+.bigBtn:active{transform:scale(.97);}
+#oBtn2{
+  width:100%;padding:13px;border:2px solid #e2e8f0;border-radius:14px;
+  background:transparent;color:#64748b;font-size:15px;font-weight:700;
+  cursor:pointer;margin-top:10px;
+}
+
+/* ── CYCLE UP BANNER ── */
+#cycleBanner{
+  display:none;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);
+  color:#fff;border-radius:16px;padding:16px;
+  text-align:center;margin:0;
+  box-shadow:0 4px 20px rgba(124,58,237,.4);
+  animation:pop .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop{from{transform:scale(.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+#cycleBanner h3{font-size:20px;font-weight:900;margin-bottom:4px;}
+#cycleBanner p{font-size:13px;opacity:.85;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div>
+    <div id="hTitle">🔍 Mistérios em Série</div>
+    <div id="hSub">Resolva o mistério!</div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <div class="hbadge"><div class="hbnum" id="hCiclo">1</div><div class="hblbl">Ciclo</div></div>
+    <div class="hbadge"><div class="hbnum" id="hFase">1</div><div class="hblbl">Fase</div></div>
+    <div class="hbadge"><div class="hbnum" id="hScore">0</div><div class="hblbl">⭐ Pts</div></div>
+  </div>
+</div>
+
+<!-- TIMER BAR -->
+<div id="timerWrap"><div id="timerFill" style="width:100%"></div></div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+
+  <!-- Cycle up banner (shown when cycle increases) -->
+  <div id="cycleBanner">
+    <h3 id="bannerTitle">🔄 CICLO 2 INICIADO!</h3>
+    <p id="bannerDesc">Dificuldade aumentada. Menos dicas disponíveis!</p>
+  </div>
+
+  <!-- Mystery card -->
+  <div id="mysteryCard">
+    <div id="mystTheme">Tema 1 · O Bolo</div>
+    <span id="mystEmoji">🎂</span>
+    <div id="mystTitle">Quem pegou o bolo?</div>
+    <div id="mystDesc">Um misterioso incidente aconteceu! Analise as pistas e descubra o Suspeito, o Local e a Pista que revelam a verdade.</div>
+  </div>
+
+  <!-- Status row -->
+  <div id="statusRow">
+    <div class="statCard" id="attCard">
+      <div class="snum" id="sAttempts">6</div>
+      <div class="slbl">Tentativas</div>
+    </div>
+    <div class="statCard" id="scoreCard">
+      <div class="snum" id="sScore">0</div>
+      <div class="slbl">Pontos</div>
+    </div>
+    <div class="statCard" id="cycCard">
+      <div class="snum" id="sCycle">1</div>
+      <div class="slbl">Ciclo</div>
+    </div>
+  </div>
+
+  <!-- Clues panel -->
+  <div id="cluesPanel">
+    <div id="cluesTitle">🔎 Pistas Reveladas</div>
+    <div id="cluesList">
+      <div class="noClue" id="noClue">Nenhuma pista ainda. Faça um palpite!</div>
+    </div>
+  </div>
+
+  <!-- Guess section -->
+  <div id="guessSection">
+    <div id="guessTitle">🎯 Seu Palpite</div>
+
+    <div class="guessGroup">
+      <div class="groupLabel">👤 Suspeito</div>
+      <div class="choiceGrid" id="suspectGrid"></div>
+    </div>
+
+    <div class="guessGroup">
+      <div class="groupLabel">📍 Local</div>
+      <div class="choiceGrid" id="localGrid"></div>
+    </div>
+
+    <div class="guessGroup" style="margin-bottom:16px;">
+      <div class="groupLabel">🔑 Pista</div>
+      <div class="choiceGrid" id="clueGrid"></div>
+    </div>
+
+    <button id="btnSubmit" disabled>Confirmar Palpite</button>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- OVERLAY -->
+<div id="overlay">
+  <div id="oBox">
+    <span id="oEmoji">🎉</span>
+    <div id="oTitle">Parabéns!</div>
+    <div id="oBadges">
+      <div class="oBadge"><span id="oFase">F1</span>Fase</div>
+      <div class="oBadge"><span id="oCiclo">C1</span>Ciclo</div>
+      <div class="oBadge"><span id="oPts">+0</span>Pontos</div>
+    </div>
+    <div id="oReveal"></div>
+    <div id="oMsg"></div>
+    <button class="bigBtn" id="oBtn">Próxima Fase →</button>
+    <button id="oBtn2" style="display:none">Recomeçar do Início</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  MISTÉRIOS EM SÉRIE — Lógica de Dedução com Ciclos Infinitos
+// ============================================================
+
+// ── 1. BANCO DE DADOS DE TEMAS ──
+const THEMES = [
+  {
+    id: 1,
+    nome: 'O Bolo',
+    emoji: '🎂',
+    titulo: 'Quem pegou o bolo?',
+    desc: 'O bolo de aniversário sumiu! Descubra quem foi o ladrão guloso.',
+    suspeitos: ['Irmão','Cachorro','Prima','Tio'],
+    locais:    ['Cozinha','Sala','Quintal','Varanda'],
+    pistas:    ['Pegada','Farelo','Pelo','Guardanapo'],
+    decoys: {
+      suspeito: 'Vizinho', local: 'Garagem', pista: 'Migalha'
+    }
+  },
+  {
+    id: 2,
+    nome: 'A Escola',
+    emoji: '🏫',
+    titulo: 'Quem fez a travessura?',
+    desc: 'Alguém aprontou na escola! Descubra o responsável antes do sinal.',
+    suspeitos: ['Zelador','Diretor','Aluno','Professora'],
+    locais:    ['Diretoria','Laboratório','Quadra','Biblioteca'],
+    pistas:    ['Óculos','Bilhete','Chaveiro','Caneta'],
+    decoys: {
+      suspeito: 'Inspetor', local: 'Cantina', pista: 'Borracha'
+    }
+  },
+  {
+    id: 3,
+    nome: 'O Parque',
+    emoji: '🎡',
+    titulo: 'Quem causou o mistério?',
+    desc: 'Algo estranho aconteceu no parque de diversões. Resolva o caso!',
+    suspeitos: ['Palhaço','Mágico','Pipoqueiro','Guarda'],
+    locais:    ['Carrossel','Roda-Gigante','Circo','Lago'],
+    pistas:    ['Balão','Ingresso','Pipoca','Cartola'],
+    decoys: {
+      suspeito: 'Domador', local: 'Bilheteria', pista: 'Confete'
+    }
+  },
+  {
+    id: 4,
+    nome: 'O Pet Shop',
+    emoji: '🐾',
+    titulo: 'Quem causou a confusão?',
+    desc: 'Caos no pet shop! Descubra qual bichinho é o culpado.',
+    suspeitos: ['Gato','Furão','Papagaio','Hamster'],
+    locais:    ['Gaiola','Banho','Vitrine','Estoque'],
+    pistas:    ['Ração','Brinquedo','Pena','Coleira'],
+    decoys: {
+      suspeito: 'Coelho', local: 'Recepção', pista: 'Arranhão'
+    }
+  },
+  {
+    id: 5,
+    nome: 'O Acampamento',
+    emoji: '⛺',
+    titulo: 'Quem sumiu com o item?',
+    desc: 'No acampamento, algo desapareceu na noite. Investigue!',
+    suspeitos: ['Monitor','Instrutor','Guia','Colega'],
+    locais:    ['Barraca','Fogueira','Trilha','Rio'],
+    pistas:    ['Lanterna','Bússola','Mapa','Cantil'],
+    decoys: {
+      suspeito: 'Explorador', local: 'Cozinha', pista: 'Corda'
+    }
+  }
+];
+
+// ── 2. ESTADO DO JOGO ──
+let cycle    = 1;   // Ciclo atual (começa em 1)
+let fase     = 0;   // Índice do tema atual (0–4)
+let score    = 0;   // Pontuação global
+
+// Variáveis do nível atual
+let secret   = {};  // {suspeito, local, pista}
+let attempts = 6;   // tentativas restantes
+let eliminated = {suspeitos:[], locais:[], pistas:[]};
+let guessSelected = {suspeito:null, local:null, pista:null};
+let cluesRevealed = [];
+let timerInterval= null;
+let timeLeft = 120; // segundos (Ciclo 3+)
+let levelScore = 0; // pontos ganhos no nível
+
+// ── 3. MODIFICADORES DE DIFICULDADE POR CICLO ──
+function getCycleSettings() {
+  if (cycle === 1) return {attempts:6, freeClues:2, timer:false,  decoys:false};
+  if (cycle === 2) return {attempts:5, freeClues:1, timer:false,  decoys:false};
+  if (cycle === 3) return {attempts:4, freeClues:0, timer:true,   decoys:false};
+  return            /*4+*/{attempts:4, freeClues:0, timer:true,   decoys:true};
+}
+
+// ── 4. OBTER LISTAS DE OPÇÕES (com decoys no ciclo 4+) ──
+function getOptions(theme) {
+  const s = getCycleSettings();
+  const sus  = [...theme.suspeitos];
+  const loc  = [...theme.locais];
+  const pis  = [...theme.pistas];
+  if (s.decoys) {
+    sus.push(theme.decoys.suspeito);
+    loc.push(theme.decoys.local);
+    pis.push(theme.decoys.pista);
+  }
+  return {sus, loc, pis};
+}
+
+// ── 5. INICIAR NÍVEL ──
+function initLevel(showBanner) {
+  const theme = THEMES[fase];
+  const settings = getCycleSettings();
+  const {sus, loc, pis} = getOptions(theme);
+
+  // Sorteia o segredo
+  secret = {
+    suspeito: theme.suspeitos[Math.floor(Math.random()*theme.suspeitos.length)],
+    local:    theme.locais[Math.floor(Math.random()*theme.locais.length)],
+    pista:    theme.pistas[Math.floor(Math.random()*theme.pistas.length)],
+  };
+
+  attempts   = settings.attempts;
+  eliminated = {suspeitos:[], locais:[], pistas:[]};
+  guessSelected = {suspeito:null, local:null, pista:null};
+  cluesRevealed  = [];
+  levelScore = 100 + cycle * 20;
+
+  // Revelar pistas grátis (eliminações)
+  for (let i=0; i<settings.freeClues; i++) {
+    revealEliminationClue();
+  }
+
+  // Timer
+  clearInterval(timerInterval);
+  if (settings.timer) {
+    timeLeft = 90 + (cycle === 3 ? 30 : 0); // Ciclo 3: 120s, Ciclo 4+: 90s
+    startTimer();
+    document.getElementById('timerWrap').style.display = 'block';
+  } else {
+    document.getElementById('timerWrap').style.display = 'none';
+  }
+
+  // Banner de novo ciclo
+  if (showBanner) showCycleBanner();
+  else hideCycleBanner();
+
+  renderLevel();
+}
+
+// ── 6. REVELAR PISTA DE ELIMINAÇÃO ──
+// Revela um item que NÃO faz parte do segredo, ajudando a eliminar opções
+function revealEliminationClue() {
+  const theme = THEMES[fase];
+  const {sus, loc, pis} = getOptions(theme);
+
+  // Candidatos a eliminar (não são o segredo e ainda não eliminados)
+  const canSus = sus.filter(s=>s!==secret.suspeito && !eliminated.suspeitos.includes(s));
+  const canLoc = loc.filter(l=>l!==secret.local    && !eliminated.locais.includes(l));
+  const canPis = pis.filter(p=>p!==secret.pista    && !eliminated.pistas.includes(p));
+
+  const pool = [];
+  if (canSus.length) pool.push({type:'suspeito', item:canSus[Math.floor(Math.random()*canSus.length)]});
+  if (canLoc.length) pool.push({type:'local',    item:canLoc[Math.floor(Math.random()*canLoc.length)]});
+  if (canPis.length) pool.push({type:'pista',    item:canPis[Math.floor(Math.random()*canPis.length)]});
+
+  if (!pool.length) return;
+  const chosen = pool[Math.floor(Math.random()*pool.length)];
+
+  if (chosen.type==='suspeito') eliminated.suspeitos.push(chosen.item);
+  if (chosen.type==='local')    eliminated.locais.push(chosen.item);
+  if (chosen.type==='pista')    eliminated.pistas.push(chosen.item);
+
+  const labels = {suspeito:'Suspeito', local:'Local', pista:'Pista'};
+  const icons  = {suspeito:'👤', local:'📍', pista:'🔑'};
+  cluesRevealed.push({
+    icon: icons[chosen.type],
+    text: `<b>${chosen.item}</b> não é o ${labels[chosen.type]} do mistério.`
+  });
+}
+
+// ── 7. TIMER (CICLO 3+) ──
+function startTimer() {
+  updateTimerBar();
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    updateTimerBar();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      showGameOver('timeout');
+    }
+  }, 1000);
+}
+
+function updateTimerBar() {
+  const max = cycle===3 ? 120 : 90;
+  const pct = Math.max(0, (timeLeft/max)*100);
+  document.getElementById('timerFill').style.width = pct+'%';
+}
+
+function timePenalty() {
+  // Ciclo 3+: palpite errado custa 20 segundos
+  if (getCycleSettings().timer) {
+    timeLeft = Math.max(0, timeLeft - 20);
+    updateTimerBar();
+    showToast('⏱️ -20 segundos!');
+  }
+}
+
+// ── 8. RENDERIZAR NÍVEL ──
+function renderLevel() {
+  const theme = THEMES[fase];
+  const {sus, loc, pis} = getOptions(theme);
+
+  // Header
+  document.getElementById('hCiclo').textContent = cycle;
+  document.getElementById('hFase').textContent  = fase+1;
+  document.getElementById('hScore').textContent = score;
+  document.getElementById('sCycle').textContent = cycle;
+  document.getElementById('sScore').textContent = score;
+  document.getElementById('sAttempts').textContent = attempts;
+
+  // Mystery card
+  document.getElementById('mystTheme').textContent  = `Ciclo ${cycle} · ${theme.nome}`;
+  document.getElementById('mystEmoji').textContent  = theme.emoji;
+  document.getElementById('mystTitle').textContent  = theme.titulo;
+  document.getElementById('mystDesc').textContent   = theme.desc;
+
+  // Clues
+  renderClues();
+
+  // Guess grids
+  renderGrid('suspectGrid', sus, 'suspeito', eliminated.suspeitos);
+  renderGrid('localGrid',   loc, 'local',    eliminated.locais);
+  renderGrid('clueGrid',    pis, 'pista',    eliminated.pistas);
+
+  // Submit button state
+  updateSubmitBtn();
+}
+
+function renderClues() {
+  const list = document.getElementById('cluesList');
+  const noClue = document.getElementById('noClue');
+  list.innerHTML = '';
+  if (cluesRevealed.length === 0) {
+    list.appendChild(noClue);
+    noClue.style.display = 'block';
+    return;
+  }
+  noClue.style.display = 'none';
+  cluesRevealed.forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'clueItem';
+    div.innerHTML = `<span class="clueIcon">${c.icon}</span><span class="clueText">${c.text}</span>`;
+    list.appendChild(div);
+  });
+}
+
+function renderGrid(gridId, items, type, eliminatedList) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  items.forEach(item=>{
+    const btn = document.createElement('button');
+    btn.className = 'choiceBtn';
+    btn.textContent = item;
+    if (eliminatedList.includes(item)) {
+      btn.classList.add('eliminated');
+    } else if (guessSelected[type] === item) {
+      btn.classList.add('selected');
+    }
+    btn.addEventListener('click', ()=>{
+      if (btn.classList.contains('eliminated')) return;
+      guessSelected[type] = item;
+      renderGrid(gridId, items, type, eliminatedList);
+      updateSubmitBtn();
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function updateSubmitBtn() {
+  const btn = document.getElementById('btnSubmit');
+  const ready = guessSelected.suspeito && guessSelected.local && guessSelected.pista;
+  btn.disabled = !ready;
+}
+
+// ── 9. MECÂNICA DE PALPITE ──
+document.getElementById('btnSubmit').addEventListener('click', submitGuess);
+
+function submitGuess() {
+  const g = guessSelected;
+  const correctSus  = g.suspeito === secret.suspeito;
+  const correctLoc  = g.local    === secret.local;
+  const correctPis  = g.pista    === secret.pista;
+  const allCorrect  = correctSus && correctLoc && correctPis;
+
+  if (allCorrect) {
+    // VITÓRIA no nível!
+    clearInterval(timerInterval);
+    const bonus = attempts * 15 + (getCycleSettings().timer ? Math.floor(timeLeft/2) : 0);
+    levelScore += bonus;
+    score += levelScore;
+    showVictoryOverlay();
+    return;
+  }
+
+  // Palpite errado
+  attempts--;
+  timePenalty(); // penalidade de tempo no ciclo 3+
+
+  // Revelar uma eliminação como dica
+  revealEliminationClue();
+
+  // Feedback parcial
+  const parts = [];
+  if (correctSus) parts.push('Suspeito ✅');
+  else parts.push('Suspeito ❌');
+  if (correctLoc) parts.push('Local ' + (correctLoc?'✅':'❌'));
+  if (correctPis) parts.push('Pista ' + (correctPis?'✅':'❌'));
+  showToast(`${parts.join(' · ')} — ${attempts} tentativa(s) restante(s)`);
+
+  // Verificar se acabaram as tentativas
+  if (attempts <= 0) {
+    clearInterval(timerInterval);
+    setTimeout(()=>showGameOver('attempts'), 600);
+    return;
+  }
+
+  // Reset seleção e re-renderiza
+  guessSelected = {suspeito:null, local:null, pista:null};
+  renderLevel();
+  renderClues();
+
+  document.getElementById('hScore').textContent = score;
+  document.getElementById('sAttempts').textContent = attempts;
+}
+
+// ── 10. VITÓRIA NO NÍVEL ──
+function showVictoryOverlay() {
+  const theme = THEMES[fase];
+  document.getElementById('oEmoji').textContent = '🎉';
+  document.getElementById('oTitle').textContent = 'Mistério Resolvido!';
+  document.getElementById('oTitle').style.color = '#4f46e5';
+
+  document.getElementById('oFase').textContent  = 'F'+(fase+1);
+  document.getElementById('oCiclo').textContent = 'C'+cycle;
+  document.getElementById('oPts').textContent   = '+'+levelScore;
+
+  document.getElementById('oReveal').innerHTML =
+    `O segredo era: <b>👤 ${secret.suspeito}</b> no <b>📍 ${secret.local}</b> com a pista <b>🔑 ${secret.pista}</b>.`;
+
+  // Próxima fase
+  const nextFase = (fase+1) % THEMES.length;
+  const nextCycle = nextFase === 0 ? cycle+1 : cycle;
+  const isNewCycle = nextFase === 0;
+
+  if (isNewCycle) {
+    document.getElementById('oMsg').textContent =
+      `Incrível! Você completou todos os temas do Ciclo ${cycle}! O Ciclo ${nextCycle} começa agora com dificuldade aumentada!`;
+    document.getElementById('oBtn').textContent = `🔄 Iniciar Ciclo ${nextCycle}`;
+  } else {
+    document.getElementById('oMsg').textContent =
+      `Próximo mistério: ${THEMES[nextFase].emoji} ${THEMES[nextFase].nome}`;
+    document.getElementById('oBtn').textContent = 'Próxima Fase →';
+  }
+  document.getElementById('oBtn2').style.display = 'none';
+
+  document.getElementById('overlay').classList.add('show');
+}
+
+// ── 11. DERROTA ──
+function showGameOver(reason) {
+  document.getElementById('oEmoji').textContent = reason==='timeout' ? '⏱️' : '😵';
+  document.getElementById('oTitle').textContent = reason==='timeout' ? 'Tempo Esgotado!' : 'Sem Tentativas!';
+  document.getElementById('oTitle').style.color = '#ef4444';
+
+  document.getElementById('oFase').textContent  = 'F'+(fase+1);
+  document.getElementById('oCiclo').textContent = 'C'+cycle;
+  document.getElementById('oPts').textContent   = score;
+
+  document.getElementById('oReveal').innerHTML =
+    `O segredo era: <b>👤 ${secret.suspeito}</b> no <b>📍 ${secret.local}</b> com a pista <b>🔑 ${secret.pista}</b>.`;
+
+  document.getElementById('oMsg').textContent =
+    reason==='timeout'
+      ? 'O tempo acabou antes de resolver o mistério. Tente novamente!'
+      : 'Suas tentativas acabaram. O mistério ficou sem solução desta vez!';
+
+  document.getElementById('oBtn').textContent = '↺ Tentar Novamente';
+  document.getElementById('oBtn2').style.display = 'block';
+  document.getElementById('oBtn2').textContent = 'Recomeçar do Início';
+
+  document.getElementById('overlay').classList.add('show');
+}
+
+// ── 12. OVERLAY — BOTÕES ──
+document.getElementById('oBtn').addEventListener('click', ()=>{
+  document.getElementById('overlay').classList.remove('show');
+
+  const nextFase = (fase+1) % THEMES.length;
+  const isNewCycle = nextFase === 0 && document.getElementById('oTitle').textContent.includes('Resolvido');
+
+  if (document.getElementById('oTitle').textContent.includes('Resolvido')) {
+    // Vitória: avança
+    if (nextFase === 0) {
+      cycle++;
+      fase = 0;
+      initLevel(true);
+    } else {
+      fase = nextFase;
+      initLevel(false);
+    }
+  } else {
+    // Derrota: tenta de novo o mesmo nível
+    initLevel(false);
+  }
+});
+
+document.getElementById('oBtn2').addEventListener('click', ()=>{
+  document.getElementById('overlay').classList.remove('show');
+  cycle=1; fase=0; score=0;
+  initLevel(false);
+});
+
+// ── 13. CYCLE BANNER ──
+function showCycleBanner() {
+  const s = getCycleSettings();
+  const banner = document.getElementById('cycleBanner');
+  const msgs = {
+    2:'Menos pistas de graça. Você precisa deduzir mais!',
+    3:'Cronômetro ativado! Palpites errados custam tempo.',
+  };
+  document.getElementById('bannerTitle').textContent = `🔄 CICLO ${cycle} INICIADO!`;
+  document.getElementById('bannerDesc').textContent =
+    cycle >= 4
+      ? `Ciclo ${cycle}: Suspeitos extras aparecem para confundir!`
+      : (msgs[cycle] || `Dificuldade máxima! Boa sorte, detetive!`);
+  banner.style.display = 'block';
+  setTimeout(()=>banner.style.display='none', 4000);
+}
+function hideCycleBanner() {
+  document.getElementById('cycleBanner').style.display = 'none';
+}
+
+// ── 14. TOAST ──
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── INICIAR JOGO ──
+initLevel(false);
+</script>
+</body>
+</html>
